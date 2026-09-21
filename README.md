@@ -10,7 +10,8 @@ caméra et la SELPHY : voir la section « Ce qu'il reste à valider » plus bas.
 
 * **Accueil** : l'aperçu de la caméra s'affiche avec un cadre qui montre exactement la zone qui sera imprimée.
   Il suffit de toucher l'écran pour lancer le décompte.
-* **Décompte** : 3, 2, 1, un flash blanc, puis la photo prise s'affiche en grand.
+* **Décompte** : sa durée se choisit de **1 à 10 secondes** dans *Réglages → Photos*. Après le décompte,
+  un flash blanc apparaît, puis la photo prise s'affiche en grand.
 * **Validation** : après chaque photo, l'invité touche **« Conserver »** pour passer à la suivante ou **« Reprendre »**
   pour la refaire (sans limite). Sans réponse au bout de 30 secondes, la photo est conservée.
 * **Résultat et impression** : quand le nombre de photos demandé est atteint, la planche finale s'affiche.
@@ -22,31 +23,44 @@ caméra et la SELPHY : voir la section « Ce qu'il reste à valider » plus bas.
 
 * **Galerie (invités)** : le bouton « Galerie » de l'accueil ouvre les planches déjà prises, en commençant par la plus récente.
   On avance (« Suivant »), on recule (« Précédent ») ou on fait glisser le doigt, puis on sort avec « Quitter ».
-  Les invités ne peuvent jamais supprimer une photo. Leur droit de réimprimer une planche se règle dans l'onglet *Système*.
-* **Administrateur** : après saisie du code (engrenage de l'accueil, ou bouton « Admin » dans la galerie), le mode
+  Les invités ne peuvent jamais supprimer une photo. Par défaut, ils ne peuvent pas non plus imprimer ; leur droit de
+  réimprimer une planche s'active dans l'onglet *Système*.
+* **Administrateur** : après saisie du code (icône des réglages de l'accueil, ou bouton « Admin » dans la galerie), le mode
   administrateur est actif : les boutons « Imprimer » (réimpression de la planche affichée) et « Supprimer » apparaissent dans la galerie, et le menu de réglages s'ouvre sans redemander le code.
   Le bouton orange **« Déconnecter »** (accueil, galerie et menu) ramène au mode utilisateur.
 * **Sauvegarde sur clé USB** : chaque planche et chaque photo individuelle est copiée sur la clé (dossier `Photobooth/`).
 
 ### Le menu de configuration
 
-On l'ouvre en maintenant le doigt environ 2 secondes sur l'engrenage en haut à droite de l'écran d'accueil.
+On l'ouvre en maintenant le doigt environ 2 secondes sur l'icône à trois curseurs en haut à droite de l'écran d'accueil.
 **L'accès est protégé par un code à 4 chiffres** (voir « Code d'accès » plus bas). Un aperçu de la planche se met à jour en direct à chaque réglage.
 
 * **Fond** : 7 fonds fournis (or, argent, rose, bleu nuit, noir et or, blanc, émeraude). Vous pouvez en ajouter un
   depuis une clé USB, ou depuis un téléphone sur le même Wi-Fi via une petite page web dont l'adresse s'affiche à l'écran
   (elle demande le code d'accès).
-* **Photos** : 1, 2 ou 3 photos, et la durée du décompte. Mises en page : 1 photo (paysage, centrée),
+* **Photos** : 1, 2 ou 3 photos, et choix direct du décompte entre 1 et 10 secondes. Mises en page : 1 photo (paysage, centrée),
   **2 photos en portrait** (deux photos empilées, texte en dessous : planche 1200×1800), 3 photos (paysage, une grande
   et deux petites comme la planche d'origine).
-* **Texte** : 1 ou 2 lignes, un clavier tactile avec les accents, la taille et 14 couleurs au choix pour chaque ligne,
-  et le choix de la police.
+* **Texte** : 1 ou 2 lignes, initialisées avec « Votre texte pour la première ligne » et
+  « Votre texte pour la seconde ligne ». Un clavier tactile avec les accents permet de les modifier, avec la taille,
+  14 couleurs au choix pour chaque ligne et le choix de la police.
 * **Système** : l'imprimante, le nombre de copies, le comportement après la photo
   (impression automatique annulable, ou sans impression), le délai avant impression et l'autorisation donnée aux invités
   de réimprimer depuis la galerie.
 
 Toutes les planches sont gardées dans `photos/` de l'appareil, avec les photos individuelles dans `photos/raw/`,
 et copiées sur la clé USB.
+
+### Fiabilité et récupération
+
+* Si l'enregistrement d'une planche échoue, par exemple lorsque le disque est plein, les clichés restent en mémoire
+  et un bouton permet de réessayer après avoir corrigé le problème.
+* `config.json` est validé au démarrage. Une valeur incorrecte est remplacée par sa valeur par défaut au lieu de bloquer
+  le lancement, et les modifications sont enregistrées de façon atomique pour préserver le fichier en cas d'interruption.
+* L'éjection d'une clé USB s'effectue en arrière-plan afin de ne pas figer l'interface.
+* Le code administrateur est strictement limité à quatre chiffres, y compris après une correction avec la touche Effacer.
+* La lecture de l'état CUPS est forcée dans une langue stable, ce qui évite les erreurs de détection dues à la langue du système.
+* Sous Windows, les polices système courantes sont détectées pour afficher correctement les accents dans l'aperçu.
 
 ### Ce qu'il reste à valider
 
@@ -106,17 +120,37 @@ python3 photobooth.py --windowed --camera fake   # test sur ordinateur, sans cam
 
 Démarrage automatique : `mkdir -p ~/.config/autostart && cp photobooth.desktop ~/.config/autostart/`
 
+### Test sur Windows
+
+Depuis PowerShell ou l'invite de commandes, dans le dossier du projet :
+
+```powershell
+py -m venv .venv
+.venv\Scripts\python.exe -m pip install -r requirements.txt
+.venv\Scripts\python.exe photobooth.py --windowed --camera fake --no-web
+```
+
+Ce mode ouvre une fenêtre avec une caméra simulée et ne nécessite ni caméra, ni imprimante, ni clé USB.
+
+Pour lancer les tests automatisés :
+
+```powershell
+.venv\Scripts\python.exe -m unittest discover -s tests -p "test_*.py" -v
+```
+
 ## 4. Menu de configuration
 
-Sur l'écran d'accueil, **maintenez le doigt ~2 secondes sur l'engrenage en haut à droite** (code demandé, sauf si vous êtes déjà connecté en administrateur).
+Sur l'écran d'accueil, **maintenez le doigt ~2 secondes sur l'icône à trois curseurs en haut à droite**
+(code demandé, sauf si vous êtes déjà connecté en administrateur).
 
 * **Fond** : 7 fonds fournis (or, argent, rose, bleu nuit, noir et or, blanc, émeraude).
   Pour ajouter le vôtre : *Importer depuis une clé USB* (photo au format paysage 3:2 idéalement,
   elle est recadrée au centre), ou depuis un téléphone sur la même Wi-Fi à l'adresse affichée (`http://IP:8080`).
   Les fonds paysage sont pivotés de 90° pour la planche portrait (2 photos) ; une image importée en hauteur
   (idéalement 1200×1800) reste en portrait et est pivotée pour les planches paysage.
-* **Photos** : 1, 2 ou 3 photos (2 photos = planche portrait) ; durée du décompte.
-* **Texte** : 1 ou 2 lignes, clavier tactile (accents inclus), taille et couleur de chaque ligne, police.
+* **Photos** : 1, 2 ou 3 photos (2 photos = planche portrait) ; choix du décompte de 1 à 10 secondes.
+* **Texte** : 1 ou 2 lignes, avec les textes initiaux « Votre texte pour la première ligne » et
+  « Votre texte pour la seconde ligne » ; clavier tactile (accents inclus), taille et couleur de chaque ligne, police.
 * **Stockage** : copie sur clé USB ou copie interne seulement, état de la clé et espace libre, copie manuelle,
   éjection de la clé en toute sécurité.
 * **Système** : imprimante, nombre de copies, changement du code d'accès, mode après la photo
