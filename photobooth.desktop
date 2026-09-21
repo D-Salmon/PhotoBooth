@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=Photobooth
+Exec=/usr/bin/python3 /home/pi/photobooth/photobooth.py
+Path=/home/pi/photobooth
+Terminal=false

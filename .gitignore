@@ -1,0 +1,10 @@
+.venv/
+examen/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Données propres à chaque photobooth
+config.json
+photos/
+

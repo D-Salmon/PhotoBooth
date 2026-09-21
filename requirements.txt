@@ -1,0 +1,6 @@
+# Sur Raspberry Pi OS, préférez apt (voir LISEZMOI.md). Sinon :
+pygame
+pillow
+numpy
+flask
+opencv-python-headless   # seulement si vous utilisez une webcam USB

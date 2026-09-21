@@ -1,0 +1,2 @@
+Déposez ici vos polices (.ttf ou .otf) : elles apparaîtront dans Configuration > Texte > Police.
+Pour un rendu proche d'une invitation, essayez par exemple « Cinzel Decorative » (Google Fonts).
