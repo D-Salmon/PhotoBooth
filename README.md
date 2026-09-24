@@ -14,6 +14,8 @@ caméra et la SELPHY : voir la section « Ce qu'il reste à valider » plus bas.
   un flash blanc apparaît, puis la photo prise s'affiche en grand.
 * **Validation** : après chaque photo, l'invité touche **« Conserver »** pour passer à la suivante ou **« Reprendre »**
   pour la refaire (sans limite). Sans réponse au bout de 30 secondes, la photo est conservée.
+  Après « Conserver », l'aperçu de la caméra revient avec le bouton **« Touchez pour la photo 2/3 »** : le décompte suivant ne démarre
+  que lorsque l'invité touche l'écran (comme pour la première photo). Sans appui pendant 2 minutes, retour à l'accueil.
 * **Résultat et impression** : quand le nombre de photos demandé est atteint, la planche finale s'affiche.
   **Si l'imprimante est connectée**, l'impression démarre automatiquement après **3 secondes** (réglable de 1 à 10 s),
   pendant lesquelles un gros bouton rouge **« Ne pas imprimer »** permet d'annuler. Dans tous les cas la photo est enregistrée.

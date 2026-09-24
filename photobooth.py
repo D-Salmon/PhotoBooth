@@ -35,6 +35,7 @@ TABS = ["Fond", "Photos", "Texte", "Stockage", "Système"]
 ADMIN_TIMEOUT = 600      # déconnexion admin après 10 min sans action d'administration
 GALLERY_IDLE = 120       # retour à l'accueil après 2 min d'inactivité dans la galerie
 PRINT_MODES = [("auto", "Impression automatique (annulable)"), ("off", "Sans impression")]
+READY_TIMEOUT = 120      # retour à l'accueil si personne ne touche l'écran entre deux photos
 REVIEW_TIMEOUT = 30      # photo conservée automatiquement si personne ne répond
 
 KB_ROWS = [
@@ -80,6 +81,7 @@ class App:
 
         self.mode = "home"
         self.phase = ""
+        self.ready_t0 = 0
         self.hits = []
         self.hits_mode = None
         self.reg = True
@@ -236,6 +238,8 @@ class App:
         elif self.mode == "countdown":
             if self.phase == "review":
                 self.click(pos)
+            elif self.phase == "ready" and time.time() - self.ready_t0 > 0.6:
+                self.start_next_shot()      # n'importe où sur l'écran, comme à l'accueil
         elif self.mode in ("result", "config", "pin"):
             self.click(pos)
 
@@ -291,9 +295,14 @@ class App:
         self.shots.append(self.pending)
         self.pending = None
         if len(self.shots) < self.cfg["num_photos"]:
-            self.phase, self.t0 = "count", time.time()
+            self.phase, self.ready_t0 = "ready", time.time()
         else:
             self.phase = "compose"
+
+    def start_next_shot(self):
+        if self.mode != "countdown" or self.phase != "ready":
+            return
+        self.phase, self.t0 = "count", time.time()
 
     def retake_shot(self):
         if self.mode != "countdown" or self.phase != "review":
@@ -427,6 +436,9 @@ class App:
             elif self.phase == "review":
                 if now - self.review_t0 > REVIEW_TIMEOUT:
                     self.keep_shot()
+            elif self.phase == "ready":
+                if now - max(self.last_touch, self.ready_t0) > READY_TIMEOUT:
+                    self.go_home()
             elif self.phase == "compose":
                 self.finish_session()
         elif self.mode == "pin":
@@ -554,6 +566,16 @@ class App:
             by = self.H - S(150)
             self.button((self.W // 2 - bw - S(15), by, bw, bh), "Conserver", self.keep_shot, size=36, fill=GREEN)
             self.button((self.W // 2 + S(15), by, bw, bh), "Reprendre", self.retake_shot, size=36)
+            return
+        if self.phase == "ready":
+            self.draw_camera()
+            self.outlined(f"Photo {idx}/{n}", 40, (self.W // 2, self.S(55)))
+            pulse = 1 + 0.03 * math.sin(time.time() * 3)
+            rect = pygame.Rect(0, 0, int(self.S(700) * pulse), int(self.S(110) * pulse))
+            rect.midbottom = (self.W // 2, self.H - self.S(36))
+            pygame.draw.rect(self.screen, ACCENT, rect, border_radius=rect.h // 2)
+            self.text(f"Touchez pour la photo {idx}/{n}", 34, DARK, center=rect.center)
+            self.outlined("Placez-vous dans le cadre blanc", 28, (self.W // 2, rect.top - self.S(30)))
             return
         self.draw_camera()
         remaining = max(1, math.ceil(self.cfg["countdown"] - (time.time() - self.t0)))
