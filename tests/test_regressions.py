@@ -131,4 +131,36 @@ class RegressionTests(unittest.TestCase):
             finally:
                 app.camera.stop(); pygame.quit()
 
+    def test_manual_start_between_photos(self):
+        with tempfile.TemporaryDirectory() as d, patch.object(C, 'PHOTO_DIR', Path(d)), patch.object(C, 'RAW_DIR', Path(d)/'raw'):
+            app = App(Namespace(windowed=True, size='1280x800', camera='fake', no_web=True))
+            try:
+                app.cfg['num_photos'] = 3
+                app.update()
+                app.start_session()
+                self.assertEqual(app.phase, 'count')
+                app.pending = app.camera.capture(); app.shot_surf = app.shot_display(app.pending)
+                app.phase = 'review'
+                app.keep_shot()
+                self.assertEqual(app.phase, 'ready')      # attend un appui
+                app.update(); app.draw()
+                self.assertEqual(app.phase, 'ready')
+                app.on_down((10, 10))                     # trop tôt : ignoré (anti double appui)
+                self.assertEqual(app.phase, 'ready')
+                app.ready_t0 -= 1
+                app.on_down((10, 10))
+                self.assertEqual(app.phase, 'count')
+                # dernière photo : pas d'attente, on compose
+                app.shots = [app.camera.capture(), app.camera.capture()]
+                app.pending = app.camera.capture(); app.phase = 'review'
+                app.keep_shot()
+                self.assertEqual(app.phase, 'compose')
+                # sans appui pendant longtemps : retour accueil
+                app.go_home(); app.start_session(); app.phase = 'ready'
+                app.ready_t0 = app.last_touch = 0
+                app.update()
+                self.assertEqual(app.mode, 'home')
+            finally:
+                app.camera.stop(); pygame.quit()
+
 if __name__ == '__main__': unittest.main()
